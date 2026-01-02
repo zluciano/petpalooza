@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "PetPalooza",
+    "slug": "petpalooza",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5EDE6"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.petpalooza.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "PetPalooza needs camera access to take photos of your pets.",
+        "NSPhotoLibraryUsageDescription": "PetPalooza needs photo library access to upload pet photos.",
+        "NSLocationWhenInUseUsageDescription": "PetPalooza needs your location to find nearby emergency vets."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F5EDE6"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.petpalooza.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "sounds": []
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow PetPalooza to use your location to find nearby emergency vets."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow PetPalooza to access your photos to upload pet pictures."
+        }
+      ]
+    ]
+  }
+}
