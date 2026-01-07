@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
 import { Button, Input, Select, DatePicker } from '../../components';
 import { colors, spacing, typography } from '../../constants/theme';
 import { usePetStore } from '../../store/petStore';
@@ -98,14 +100,16 @@ export function EditPetScreen({ navigation, route }: Props) {
 
   const uploadPhoto = async (uri: string): Promise<string | null> => {
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
       const filename = `${Date.now()}.jpg`;
       const path = `pet-photos/${filename}`;
 
       const { error } = await supabase.storage
         .from('pets')
-        .upload(path, blob, { contentType: 'image/jpeg' });
+        .upload(path, decode(base64), { contentType: 'image/jpeg' });
 
       if (error) throw error;
 

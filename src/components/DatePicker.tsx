@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Modal,
   StyleSheet,
-  Platform,
+  ScrollView,
 } from 'react-native';
 import { colors, borderRadius, spacing, typography, shadows } from '../constants/theme';
 import { format } from 'date-fns';
@@ -73,7 +73,7 @@ export function DatePicker({
             <View style={styles.pickerRow}>
               <View style={styles.pickerColumn}>
                 <Text style={styles.pickerLabel}>Month</Text>
-                <View style={styles.scrollContainer}>
+                <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {months.map((m, i) => (
                     <TouchableOpacity
                       key={m}
@@ -85,12 +85,12 @@ export function DatePicker({
                       </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               </View>
 
               <View style={styles.pickerColumn}>
                 <Text style={styles.pickerLabel}>Day</Text>
-                <View style={styles.scrollContainer}>
+                <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {days.map((d) => (
                     <TouchableOpacity
                       key={d}
@@ -102,12 +102,12 @@ export function DatePicker({
                       </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               </View>
 
               <View style={styles.pickerColumn}>
                 <Text style={styles.pickerLabel}>Year</Text>
-                <View style={styles.scrollContainer}>
+                <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                   {years.map((y) => (
                     <TouchableOpacity
                       key={y}
@@ -119,7 +119,7 @@ export function DatePicker({
                       </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               </View>
             </View>
 
@@ -216,8 +216,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   scrollContainer: {
-    height: 150,
-    overflow: 'hidden',
+    height: 180,
   },
   option: {
     paddingVertical: spacing.sm,
