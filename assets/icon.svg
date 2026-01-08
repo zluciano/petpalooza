@@ -12,16 +12,16 @@
              C674 600 512 750 512 750Z"
           transform="translate(0, 50)"/>
 
-    <!-- Top left toe -->
-    <ellipse cx="340" cy="340" rx="70" ry="85" transform="rotate(-20, 340, 340)"/>
+    <!-- Outer left toe -->
+    <ellipse cx="310" cy="360" rx="65" ry="80" transform="rotate(-25, 310, 360)"/>
 
-    <!-- Top right toe -->
-    <ellipse cx="684" cy="340" rx="70" ry="85" transform="rotate(20, 684, 340)"/>
+    <!-- Outer right toe -->
+    <ellipse cx="714" cy="360" rx="65" ry="80" transform="rotate(25, 714, 360)"/>
 
-    <!-- Middle left toe -->
-    <ellipse cx="420" cy="260" rx="60" ry="75"/>
+    <!-- Inner left toe (more centered) -->
+    <ellipse cx="448" cy="265" rx="58" ry="72" transform="rotate(-8, 448, 265)"/>
 
-    <!-- Middle right toe -->
-    <ellipse cx="604" cy="260" rx="60" ry="75"/>
+    <!-- Inner right toe (more centered) -->
+    <ellipse cx="576" cy="265" rx="58" ry="72" transform="rotate(8, 576, 265)"/>
   </g>
 </svg>
