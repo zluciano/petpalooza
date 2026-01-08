@@ -14,8 +14,17 @@ import { RouteProp } from '@react-navigation/native';
 import { Card, Button, IconButton } from '../../components';
 import { colors, spacing, typography, borderRadius, shadows } from '../../constants/theme';
 import { usePetStore } from '../../store/petStore';
-import { format, differenceInYears, differenceInMonths } from 'date-fns';
+import { differenceInYears, differenceInMonths } from 'date-fns';
 import type { Pet } from '../../types';
+
+// Format date in UTC to avoid timezone issues
+function formatDateUTC(date: Date): string {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
 
 type Props = {
   navigation: StackNavigationProp<any>;
@@ -35,7 +44,8 @@ const petTypeEmojis: Record<string, string> = {
 };
 
 function getAge(dateOfBirth: string): string {
-  const dob = new Date(dateOfBirth);
+  // Parse as UTC to avoid timezone issues
+  const dob = new Date(dateOfBirth + 'T12:00:00Z');
   const years = differenceInYears(new Date(), dob);
   const months = differenceInMonths(new Date(), dob) % 12;
 
@@ -125,7 +135,7 @@ export function PetDetailScreen({ navigation, route }: Props) {
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Birthday</Text>
                 <Text style={styles.infoValue}>
-                  {format(new Date(pet.date_of_birth), 'MMMM d, yyyy')}
+                  {formatDateUTC(new Date(pet.date_of_birth + 'T12:00:00Z'))}
                 </Text>
               </View>
             )}

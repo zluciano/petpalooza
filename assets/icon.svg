@@ -1,0 +1,27 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="#F5EDE6"/>
+
+  <!-- Paw print design -->
+  <g fill="#C4A574">
+    <!-- Main pad (heart-shaped) -->
+    <path d="M512 750
+             C512 750 350 600 350 480
+             C350 380 420 320 512 400
+             C604 320 674 380 674 480
+             C674 600 512 750 512 750Z"
+          transform="translate(0, 50)"/>
+
+    <!-- Top left toe -->
+    <ellipse cx="340" cy="340" rx="70" ry="85" transform="rotate(-20, 340, 340)"/>
+
+    <!-- Top right toe -->
+    <ellipse cx="684" cy="340" rx="70" ry="85" transform="rotate(20, 684, 340)"/>
+
+    <!-- Middle left toe -->
+    <ellipse cx="420" cy="260" rx="60" ry="75"/>
+
+    <!-- Middle right toe -->
+    <ellipse cx="604" cy="260" rx="60" ry="75"/>
+  </g>
+</svg>

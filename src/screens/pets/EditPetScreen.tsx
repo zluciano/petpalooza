@@ -57,7 +57,8 @@ export function EditPetScreen({ navigation, route }: Props) {
   const [type, setType] = useState<PetType>(pet?.type || 'dog');
   const [breed, setBreed] = useState(pet?.breed || '');
   const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(
-    pet?.date_of_birth ? new Date(pet.date_of_birth) : undefined
+    // Parse as UTC to avoid timezone issues
+    pet?.date_of_birth ? new Date(pet.date_of_birth + 'T12:00:00Z') : undefined
   );
   const [weight, setWeight] = useState(pet?.weight?.toString() || '');
   const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>(pet?.weight_unit || 'kg');
@@ -111,15 +112,21 @@ export function EditPetScreen({ navigation, route }: Props) {
         .from('pets')
         .upload(path, decode(base64), { contentType: 'image/jpeg' });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Upload error:', error);
+        Alert.alert('Photo Upload Failed', 'Could not upload the photo. Changes will be saved without updating the photo.');
+        return null;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('pets')
         .getPublicUrl(path);
 
+      console.log('Photo uploaded successfully:', publicUrl);
       return publicUrl;
     } catch (error) {
       console.error('Error uploading photo:', error);
+      Alert.alert('Photo Upload Failed', 'Could not upload the photo. Changes will be saved without updating the photo.');
       return null;
     }
   };
@@ -144,20 +151,24 @@ export function EditPetScreen({ navigation, route }: Props) {
       if (url) photoUrl = url;
     }
 
-    const result = await updatePet(pet.id, {
+    const petData: Record<string, any> = {
       name: name.trim(),
       type,
-      breed: breed.trim() || undefined,
-      date_of_birth: dateOfBirth?.toISOString().split('T')[0],
-      weight: weight ? parseFloat(weight) : undefined,
+      breed: breed.trim() || null,
+      date_of_birth: dateOfBirth?.toISOString().split('T')[0] || null,
+      weight: weight ? parseFloat(weight) : null,
       weight_unit: weightUnit,
-      size: size ? parseFloat(size) : undefined,
+      size: size ? parseFloat(size) : null,
       size_unit: sizeUnit,
-      color: color.trim() || undefined,
-      microchip_id: microchipId.trim() || undefined,
-      photo_url: photoUrl || undefined,
-      notes: notes.trim() || undefined,
-    });
+      color: color.trim() || null,
+      microchip_id: microchipId.trim() || null,
+      photo_url: photoUrl || null,
+      notes: notes.trim() || null,
+    };
+
+    console.log('Updating pet with photo_url:', petData.photo_url);
+
+    const result = await updatePet(pet.id, petData);
 
     setUploading(false);
 

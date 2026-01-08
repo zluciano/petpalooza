@@ -8,8 +8,16 @@ import {
   ScrollView,
 } from 'react-native';
 import { colors, borderRadius, spacing, typography, shadows } from '../constants/theme';
-import { format } from 'date-fns';
 import { Button } from './Button';
+
+// Format date in UTC to avoid timezone issues
+function formatDateUTC(date: Date): string {
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
 
 interface DatePickerProps {
   label?: string;
@@ -32,9 +40,10 @@ export function DatePicker({
 }: DatePickerProps) {
   const [visible, setVisible] = useState(false);
   const [tempDate, setTempDate] = useState(value || new Date());
-  const [year, setYear] = useState((value || new Date()).getFullYear());
-  const [month, setMonth] = useState((value || new Date()).getMonth());
-  const [day, setDay] = useState((value || new Date()).getDate());
+  // Use UTC methods to avoid timezone issues
+  const [year, setYear] = useState((value || new Date()).getUTCFullYear());
+  const [month, setMonth] = useState((value || new Date()).getUTCMonth());
+  const [day, setDay] = useState((value || new Date()).getUTCDate());
 
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -46,7 +55,8 @@ export function DatePicker({
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
 
   const handleConfirm = () => {
-    const newDate = new Date(year, month, day);
+    // Create date as UTC to avoid timezone shifts
+    const newDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
     onChange(newDate);
     setVisible(false);
   };
@@ -59,7 +69,7 @@ export function DatePicker({
         onPress={() => setVisible(true)}
       >
         <Text style={[styles.inputText, !value && styles.placeholder]}>
-          {value ? format(value, 'MMMM d, yyyy') : placeholder}
+          {value ? formatDateUTC(value) : placeholder}
         </Text>
         <Text style={styles.icon}>📅</Text>
       </TouchableOpacity>

@@ -97,15 +97,21 @@ export function AddPetScreen({ navigation }: Props) {
         .from('pets')
         .upload(path, decode(base64), { contentType: 'image/jpeg' });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Upload error:', error);
+        Alert.alert('Photo Upload Failed', 'Could not upload the photo. The pet will be saved without it.');
+        return null;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('pets')
         .getPublicUrl(path);
 
+      console.log('Photo uploaded successfully:', publicUrl);
       return publicUrl;
     } catch (error) {
       console.error('Error uploading photo:', error);
+      Alert.alert('Photo Upload Failed', 'Could not upload the photo. The pet will be saved without it.');
       return null;
     }
   };
@@ -130,7 +136,7 @@ export function AddPetScreen({ navigation }: Props) {
       if (url) photoUrl = url;
     }
 
-    const result = await addPet({
+    const petData = {
       name: name.trim(),
       type,
       breed: breed.trim() || undefined,
@@ -143,7 +149,11 @@ export function AddPetScreen({ navigation }: Props) {
       microchip_id: microchipId.trim() || undefined,
       photo_url: photoUrl,
       notes: notes.trim() || undefined,
-    });
+    };
+
+    console.log('Saving pet with photo_url:', petData.photo_url);
+
+    const result = await addPet(petData);
 
     setUploading(false);
 

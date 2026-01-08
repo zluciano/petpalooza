@@ -55,6 +55,8 @@ export const usePetStore = create<PetState>((set, get) => ({
         return { error: 'Not authenticated' };
       }
 
+      console.log('Adding pet with data:', JSON.stringify(pet, null, 2));
+
       const { data, error } = await supabase
         .from('pets')
         .insert({
@@ -65,9 +67,12 @@ export const usePetStore = create<PetState>((set, get) => ({
         .single();
 
       if (error) {
+        console.error('Error adding pet:', error);
         set({ loading: false });
         return { error: error.message };
       }
+
+      console.log('Pet added successfully:', JSON.stringify(data, null, 2));
 
       set((state) => ({
         pets: [data, ...state.pets],
@@ -83,6 +88,8 @@ export const usePetStore = create<PetState>((set, get) => ({
   updatePet: async (id, updates) => {
     set({ loading: true });
     try {
+      console.log('Updating pet with data:', JSON.stringify(updates, null, 2));
+
       const { data, error } = await supabase
         .from('pets')
         .update({ ...updates, updated_at: new Date().toISOString() })
@@ -91,9 +98,12 @@ export const usePetStore = create<PetState>((set, get) => ({
         .single();
 
       if (error) {
+        console.error('Error updating pet:', error);
         set({ loading: false });
         return { error: error.message };
       }
+
+      console.log('Pet updated successfully:', JSON.stringify(data, null, 2));
 
       set((state) => ({
         pets: state.pets.map((p) => (p.id === id ? data : p)),
