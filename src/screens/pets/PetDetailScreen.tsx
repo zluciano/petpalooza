@@ -14,6 +14,7 @@ import { RouteProp } from '@react-navigation/native';
 import { Card, Button, IconButton } from '../../components';
 import { colors, spacing, typography, borderRadius, shadows } from '../../constants/theme';
 import { usePetStore } from '../../store/petStore';
+import { getSignedPhotoUrl } from '../../services/supabase';
 import { differenceInYears, differenceInMonths } from 'date-fns';
 import type { Pet } from '../../types';
 
@@ -61,6 +62,14 @@ function getAge(dateOfBirth: string): string {
 export function PetDetailScreen({ navigation, route }: Props) {
   const { selectedPet, deletePet, loading } = usePetStore();
   const pet = selectedPet;
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  // Load signed URL for pet photo
+  useEffect(() => {
+    if (pet?.photo_url) {
+      getSignedPhotoUrl(pet.photo_url).then(setPhotoUrl);
+    }
+  }, [pet?.photo_url]);
 
   if (!pet) {
     return (
@@ -105,8 +114,8 @@ export function PetDetailScreen({ navigation, route }: Props) {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          {pet.photo_url ? (
-            <Image source={{ uri: pet.photo_url }} style={styles.photo} />
+          {photoUrl ? (
+            <Image source={{ uri: photoUrl }} style={styles.photo} />
           ) : (
             <View style={styles.photoPlaceholder}>
               <Text style={styles.emoji}>{petTypeEmojis[pet.type] || '🐾'}</Text>

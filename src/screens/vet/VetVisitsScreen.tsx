@@ -47,15 +47,20 @@ const reminderOptions = [
   { label: '1 day before', value: '1440' },
 ];
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Wrap in try-catch for Expo Go compatibility (notifications removed in SDK 53+)
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch (e) {
+  console.log('Notifications not available in Expo Go');
+}
 
 export function VetVisitsScreen({ navigation }: Props) {
   const { selectedPet } = usePetStore();
@@ -80,9 +85,13 @@ export function VetVisitsScreen({ navigation }: Props) {
   }, [selectedPet]);
 
   const requestNotificationPermissions = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please enable notifications for reminders');
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please enable notifications for reminders');
+      }
+    } catch (e) {
+      // Notifications not available in Expo Go
     }
   };
 
@@ -105,23 +114,27 @@ export function VetVisitsScreen({ navigation }: Props) {
   };
 
   const scheduleNotification = async (visit: VetVisit) => {
-    const triggerDate = addMinutes(
-      new Date(visit.scheduled_at),
-      -visit.reminder_minutes_before
-    );
+    try {
+      const triggerDate = addMinutes(
+        new Date(visit.scheduled_at),
+        -visit.reminder_minutes_before
+      );
 
-    if (isBefore(triggerDate, new Date())) return;
+      if (isBefore(triggerDate, new Date())) return;
 
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `Vet Visit Reminder 🏥`,
-        body: `${selectedPet?.name} has a ${visit.visit_type} appointment at ${visit.vet_name}`,
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate,
-      },
-    });
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `Vet Visit Reminder 🏥`,
+          body: `${selectedPet?.name} has a ${visit.visit_type} appointment at ${visit.vet_name}`,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: triggerDate,
+        },
+      });
+    } catch (e) {
+      // Notifications not available in Expo Go
+    }
   };
 
   const handleAddVisit = async () => {

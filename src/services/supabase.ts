@@ -25,4 +25,23 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+// Generate a signed URL for private storage files
+export async function getSignedPhotoUrl(path: string | null | undefined): Promise<string | null> {
+  if (!path) return null;
+
+  // If it's already a full URL (legacy data), return as-is
+  if (path.startsWith('http')) return path;
+
+  const { data, error } = await supabase.storage
+    .from('pets')
+    .createSignedUrl(path, 3600); // 1 hour expiry
+
+  if (error) {
+    console.error('Error creating signed URL:', error);
+    return null;
+  }
+
+  return data.signedUrl;
+}
+
 export type SupabaseClient = typeof supabase;

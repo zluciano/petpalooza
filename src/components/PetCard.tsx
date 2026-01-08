@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { Card } from './Card';
 import { colors, spacing, typography, borderRadius } from '../constants/theme';
+import { getSignedPhotoUrl } from '../services/supabase';
 import type { Pet } from '../types';
-import { format, differenceInYears, differenceInMonths } from 'date-fns';
+import { differenceInYears, differenceInMonths } from 'date-fns';
 
 interface PetCardProps {
   pet: Pet;
@@ -33,11 +34,19 @@ function getAge(dateOfBirth: string): string {
 }
 
 export function PetCard({ pet, onPress }: PetCardProps) {
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pet.photo_url) {
+      getSignedPhotoUrl(pet.photo_url).then(setPhotoUrl);
+    }
+  }, [pet.photo_url]);
+
   return (
     <Card style={styles.card} onPress={onPress}>
       <View style={styles.content}>
-        {pet.photo_url ? (
-          <Image source={{ uri: pet.photo_url }} style={styles.photo} />
+        {photoUrl ? (
+          <Image source={{ uri: photoUrl }} style={styles.photo} />
         ) : (
           <View style={styles.photoPlaceholder}>
             <Text style={styles.emoji}>{petTypeEmojis[pet.type] || '🐾'}</Text>

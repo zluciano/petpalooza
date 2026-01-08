@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
-import * as Notifications from 'expo-notifications';
 import { Card, Button, Input, Select, DatePicker, EmptyState, IconButton } from '../../components';
 import { colors, spacing, typography, borderRadius } from '../../constants/theme';
 import { usePetStore } from '../../store/petStore';

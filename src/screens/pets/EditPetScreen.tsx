@@ -14,12 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system/next';
 import { decode } from 'base64-arraybuffer';
 import { Button, Input, Select, DatePicker } from '../../components';
 import { colors, spacing, typography } from '../../constants/theme';
 import { usePetStore } from '../../store/petStore';
-import { supabase } from '../../services/supabase';
+import { supabase, getSignedPhotoUrl } from '../../services/supabase';
 import type { PetType } from '../../types';
 
 type Props = {
@@ -67,10 +67,18 @@ export function EditPetScreen({ navigation, route }: Props) {
   const [color, setColor] = useState(pet?.color || '');
   const [microchipId, setMicrochipId] = useState(pet?.microchip_id || '');
   const [notes, setNotes] = useState(pet?.notes || '');
-  const [photoUri, setPhotoUri] = useState<string | null>(pet?.photo_url || null);
+  const [photoPath, setPhotoPath] = useState<string | null>(pet?.photo_url || null);
+  const [displayPhotoUrl, setDisplayPhotoUrl] = useState<string | null>(null);
   const [newPhotoUri, setNewPhotoUri] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string }>({});
+
+  // Load signed URL for existing photo
+  useEffect(() => {
+    if (photoPath) {
+      getSignedPhotoUrl(photoPath).then(setDisplayPhotoUrl);
+    }
+  }, [photoPath]);
 
   if (!pet) {
     return (
@@ -101,12 +109,17 @@ export function EditPetScreen({ navigation, route }: Props) {
 
   const uploadPhoto = async (uri: string): Promise<string | null> => {
     try {
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert('Error', 'You must be logged in to upload photos.');
+        return null;
+      }
+
+      const file = new File(uri);
+      const base64 = await file.base64();
 
       const filename = `${Date.now()}.jpg`;
-      const path = `pet-photos/${filename}`;
+      const path = `${user.id}/pet-photos/${filename}`;
 
       const { error } = await supabase.storage
         .from('pets')
@@ -118,12 +131,9 @@ export function EditPetScreen({ navigation, route }: Props) {
         return null;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('pets')
-        .getPublicUrl(path);
-
-      console.log('Photo uploaded successfully:', publicUrl);
-      return publicUrl;
+      console.log('Photo uploaded successfully, path:', path);
+      // Store the path, not the URL - we'll generate signed URLs when displaying
+      return path;
     } catch (error) {
       console.error('Error uploading photo:', error);
       Alert.alert('Photo Upload Failed', 'Could not upload the photo. Changes will be saved without updating the photo.');
@@ -144,11 +154,11 @@ export function EditPetScreen({ navigation, route }: Props) {
     if (!validate()) return;
 
     setUploading(true);
-    let photoUrl = photoUri;
+    let savedPhotoPath = photoPath;
 
     if (newPhotoUri) {
-      const url = await uploadPhoto(newPhotoUri);
-      if (url) photoUrl = url;
+      const path = await uploadPhoto(newPhotoUri);
+      if (path) savedPhotoPath = path;
     }
 
     const petData: Record<string, any> = {
@@ -162,7 +172,7 @@ export function EditPetScreen({ navigation, route }: Props) {
       size_unit: sizeUnit,
       color: color.trim() || null,
       microchip_id: microchipId.trim() || null,
-      photo_url: photoUrl || null,
+      photo_url: savedPhotoPath || null,
       notes: notes.trim() || null,
     };
 
@@ -180,7 +190,7 @@ export function EditPetScreen({ navigation, route }: Props) {
   };
 
   const showSizeField = type === 'snake' || type === 'fish' || type === 'turtle';
-  const displayPhotoUri = newPhotoUri || photoUri;
+  const photoToDisplay = newPhotoUri || displayPhotoUrl;
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -194,8 +204,8 @@ export function EditPetScreen({ navigation, route }: Props) {
           showsVerticalScrollIndicator={false}
         >
           <TouchableOpacity style={styles.photoContainer} onPress={pickImage}>
-            {displayPhotoUri ? (
-              <Image source={{ uri: displayPhotoUri }} style={styles.photo} />
+            {photoToDisplay ? (
+              <Image source={{ uri: photoToDisplay }} style={styles.photo} />
             ) : (
               <View style={styles.photoPlaceholder}>
                 <Text style={styles.photoIcon}>📷</Text>

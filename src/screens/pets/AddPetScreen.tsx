@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system/next';
 import { decode } from 'base64-arraybuffer';
 import { Button, Input, Select, DatePicker, IconButton } from '../../components';
 import { colors, spacing, typography, borderRadius } from '../../constants/theme';
@@ -86,12 +86,17 @@ export function AddPetScreen({ navigation }: Props) {
 
   const uploadPhoto = async (uri: string): Promise<string | null> => {
     try {
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert('Error', 'You must be logged in to upload photos.');
+        return null;
+      }
+
+      const file = new File(uri);
+      const base64 = await file.base64();
 
       const filename = `${Date.now()}.jpg`;
-      const path = `pet-photos/${filename}`;
+      const path = `${user.id}/pet-photos/${filename}`;
 
       const { error } = await supabase.storage
         .from('pets')
@@ -103,12 +108,9 @@ export function AddPetScreen({ navigation }: Props) {
         return null;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('pets')
-        .getPublicUrl(path);
-
-      console.log('Photo uploaded successfully:', publicUrl);
-      return publicUrl;
+      console.log('Photo uploaded successfully, path:', path);
+      // Store the path, not the URL - we'll generate signed URLs when displaying
+      return path;
     } catch (error) {
       console.error('Error uploading photo:', error);
       Alert.alert('Photo Upload Failed', 'Could not upload the photo. The pet will be saved without it.');
